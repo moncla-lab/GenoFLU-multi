@@ -43,8 +43,10 @@ class Excel_Stats:
         self.excel_dict = excel_dict
 
     def post_excel(self,):
+        # print(self.excel_dict)
         df = pd.DataFrame.from_dict(self.excel_dict, orient='index').T
         df = df.set_index('sample')
+        # print(df)
         df.to_excel(self.excel_filename)
 
 
@@ -52,13 +54,14 @@ class Blast_Fasta(bcolors):
     ''' 
     '''
 
-    def __init__(self, FASTA=None, format="6 qseqid sacc bitscore pident stitle", num_alignment=3, blast_db="nt", num_threads=8):
+    def __init__(self, FASTA=None, format="6 qseqid sacc bitscore pident stitle", num_alignment=3, blast_db="nt", num_threads=8, sample_name=None):
         FASTA_abs_path = FASTA
         FASTA_name = os.path.basename(FASTA_abs_path)
-        sample_name = re.sub('[_.].*', '', FASTA_name)
+        # sample_name = re.sub('[_.].*', '', FASTA_name)
         self.sample_name = sample_name
         self.blast_db = blast_db
         blastout_file = f'{sample_name}_blast_out.txt'
+        # blastout_file = os.path.join() #f'{sample_name}_blast_out.txt'
         os.system(
             f'blastn -query {FASTA_abs_path} -db {blast_db} -word_size 11 -out {blastout_file} -outfmt "{format}" -num_alignments {num_alignment} -num_threads={num_threads} 2> /dev/null')
         self.blastout_file = blastout_file
@@ -136,13 +139,14 @@ class GenoFLU():
     ''' 
     '''
 
-    def __init__(self, FASTA=None, FASTA_dir=None, cross_reference=None, sample_name=None, debug=False):
+    def __init__(self, FASTA=None, FASTA_dir=None, cross_reference=None, sample_name=None, debug=False, blast_db=None):
         '''
         Use file_setup to get the routine done
         '''
         self.debug = debug
         self.FASTA_abs_path = FASTA
-        FASTA_name = os.path.basename(self.FASTA_abs_path)
+        #FASTA_name = os.path.basename(self.FASTA_abs_path)
+        FASTA_name = self.FASTA_abs_path
         with open(FASTA_name, 'r') as f:
             fastas_in_file = 0
             for line in f:
@@ -164,6 +168,8 @@ class GenoFLU():
                 f'{script_path}/../dependencies/fastas')
             self.cross_reference = os.path.abspath(
                 f'{script_path}/../dependencies/genotype_key.xlsx')
+            
+        self.blast_db = blast_db
 
     def get_metadata(self,):
         import dvl_metadata_capture
@@ -186,11 +192,16 @@ class GenoFLU():
         self.metadata_dict = metadata_dict
         self.metadata_format_string = metadata_format_string
 
+    # def make_blast_db(self,):
+    #     os.system(
+    #         f'cat {self.FASTA_dir}/*.fasta | makeblastdb -dbtype nucl -out hpai_geno_db -title hpai_geno_db > /dev/null 2>&1')
+
     def blast_hpai_genomes(self,):
-        os.system(
-            f'cat {self.FASTA_dir}/*.fasta | makeblastdb -dbtype nucl -out hpai_geno_db -title hpai_geno_db > /dev/null 2>&1')
+        # blast_hpai_genotyping = Blast_Fasta(
+        #     FASTA=self.FASTA_abs_path, format="6 qseqid qseq length nident pident mismatch evalue bitscore sacc stitle", num_alignment=1, blast_db='hpai_geno_db', num_threads=2)
         blast_hpai_genotyping = Blast_Fasta(
-            FASTA=self.FASTA_abs_path, format="6 qseqid qseq length nident pident mismatch evalue bitscore sacc stitle", num_alignment=1, blast_db='hpai_geno_db', num_threads=2)
+            FASTA=self.FASTA_abs_path, format="6 qseqid qseq length nident pident mismatch evalue bitscore sacc stitle", num_alignment=1, blast_db=self.blast_db, num_threads=2, sample_name=self.sample_name)
+
 
         blast_genotyping_hpia = {}
         fasta_name = ""
