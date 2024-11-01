@@ -15,7 +15,7 @@ git clone https://github.com/moncla-lab/GenoFLU-multi
 ## Usage
 Generate FASTA file(s) containing each gene segment for each strain to be classified and put them into a single directory (<FASTA_directory>)
 
-FASTA headers for each entry should be identical for a given strain (see test-multi folder for examples; e.g., '>A/Cattle/Colorado/24-012225-023-original/2024' is present in each of the 8 FASTA files corresponding to individual segments)
+Segments can be put into a single FASTA file or split among separate files (all files inside the directory will be parsed); however, FASTA headers for each entry should be identical for a given strain (see test-multi folder for examples––e.g., '>A/Cattle/Colorado/24-012225-023-original/2024' is present in each of the 8 FASTA files corresponding to individual segments)
 
 ``
 cd GenoFLU-multi
