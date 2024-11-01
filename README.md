@@ -11,21 +11,28 @@ To use GenoFLU-multi, clone the Github repo as follows:
 git clone https://github.com/moncla-lab/GenoFLU-multi
 ``
 
+
 ## Usage
 Generate FASTA file(s) containing each gene segment for each strain to be classified and put them into a single directory (<FASTA_directory>)
+
 FASTA headers for each entry should be identical for a given strain (see test-multi folder for examples; e.g., '>A/Cattle/Colorado/24-012225-023-original/2024' is present in each of the 8 FASTA files corresponding to individual segments)
+
 ``
 cd GenoFLU-multi
 ``
+
 ``
 python bin/helper.py -f <FASTA_directory>
 ``
+
 Results will be output within a new results folder inside <FASTA_directory>
+
 
 ## Test
 ``
 cd GenoFLU-multi
 ``
+
 ``
 python bin/helper.py -f test-multi
 ``
