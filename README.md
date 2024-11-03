@@ -22,7 +22,7 @@ cd GenoFLU-multi
 ``
 
 ``
-python bin/helper.py -f <FASTA_directory>
+python bin/genoflu-multi.py -f <FASTA_directory>
 ``
 
 Results will be output within a new results folder inside <FASTA_directory>
@@ -34,7 +34,7 @@ cd GenoFLU-multi
 ``
 
 ``
-python bin/helper.py -f test-multi
+python bin/genoflu-multi.py -f test-multi
 ``
 
 
