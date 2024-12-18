@@ -16,6 +16,7 @@ def run_genoflu(strain_records, core = None):
     if core:
         temp_dir = os.path.join(temporary_dir, str(core))
         os.makedirs(temp_dir)
+        core_results = []
     else:
         temp_dir = temporary_dir
     
@@ -61,20 +62,28 @@ def run_genoflu(strain_records, core = None):
         except ValueError:
             pass
 
-        # write results to the results.tsv file
-        if not os.path.exists(results_tsv):
-            # if the file doesn't exist yet, set it up with dict keys as headers
-            # and write the data to the next line
-            with open(results_tsv, 'w') as f:
-                f.write('\t'.join(excel_stats.excel_dict.keys()))
-                f.write('\n'+'\t'.join(excel_stats.excel_dict.values()))
+        if core:
+            core_results.append('\n'+'\t'.join(excel_stats.excel_dict.values()))
+
         else:
-            # otherwise, just write the data to the next line
-            with open(results_tsv, 'a') as f:
-                f.write('\n'+'\t'.join(excel_stats.excel_dict.values()))
+            # write results to the results.tsv file
+            if not os.path.exists(results_tsv):
+                # if the file doesn't exist yet, set it up with dict keys as headers
+                # and write the data to the next line
+                with open(results_tsv, 'w') as f:
+                    f.write('\t'.join(excel_stats.excel_dict.keys()))
+                    f.write('\n'+'\t'.join(excel_stats.excel_dict.values()))
+            else:
+                # otherwise, just write the data to the next line
+                with open(results_tsv, 'a') as f:
+                    f.write('\n'+'\t'.join(excel_stats.excel_dict.values()))
 
         # print out a message in terminal with the strain's genotype and segment classifications
         print(f'\n{strain} Genotype --> {excel_stats.excel_dict["Genotype"]}: {excel_stats.excel_dict["Genotype List Used, >=98%"]}\n')
+
+    if core:
+        headers = '\t'.join(excel_stats.excel_dict.keys())
+        return (core_results, headers)
 
 if __name__ == '__main__':
     start_time = time.time()
@@ -116,8 +125,12 @@ if __name__ == '__main__':
     # this will prevent re-annotating strains that were previously annotated
     # (i.e., can add new sequences to your fastas and annotate only those)
     if os.path.exists(results_tsv):
-        annotated_strains = list(pd.read_csv(results_tsv, sep='\t')['Strain'])
+        try:
+            annotated_strains = list(pd.read_csv(results_tsv, sep='\t')['Strain'])
+        except Exception as e:
+            annotated_strains = []
     else:
+        # if not, there are no annotated strains
         annotated_strains = []
 
     # get list of all fastas within
@@ -167,6 +180,7 @@ if __name__ == '__main__':
         print(f'Utilziing multiprocessing with {cores} cores')
 
         if len(strain_records_to_annotate) != 0:
+            cores = min(cores, len(strain_records_to_annotate))
             split_strain_records = split(strain_records_to_annotate, cores)
         else:
             split_strain_records = [[]]
@@ -176,9 +190,22 @@ if __name__ == '__main__':
         pool = mp.Pool()
     
         ## and run the simulations
-        pool_sim_data = pool.starmap(run_genoflu, zip(split_strain_records, range(cores)))
+        pool_data = pool.starmap(run_genoflu, zip(split_strain_records, range(1,cores+1)))
+        headers = pool_data[0][1]
+
         pool.close()
         pool.join()
+
+        if os.path.exists(results_tsv):
+            with open(results_tsv, 'a') as f:
+                for data in pool_data:
+                    f.write(''.join(data[0]))
+        else:
+            with open(results_tsv, 'a') as f:
+                f.write(headers)
+                for data in pool_data:
+                    f.write(''.join(data[0]))
+
 
     else:
         run_genoflu(strain_records_to_annotate)
