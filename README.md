@@ -1,8 +1,11 @@
 # GenoFLU-multi
+Updated December 18, 2024
+
+* Added multiprocessing functionality, enabled with the `-m` or `-n` arguments
 
 Updated November 1, 2024
 
-Added functionality to classify multiple strains at a time
+* Added functionality to classify multiple strains at a time
 
 
 ## Installation
@@ -13,22 +16,39 @@ git clone https://github.com/moncla-lab/GenoFLU-multi
 
 
 ## Usage
-Generate FASTA file(s) containing each gene segment for each strain to be classified and put them into a single directory (<FASTA_directory>)
+Generate FASTA file(s) that contain all eight gene segments for each strain to be classified and put them into a single directory (`<FASTA_directory>`).
 
-Segments can be put into a single FASTA file or split among separate files (all files inside the directory will be parsed); however, FASTA headers for each entry should be identical for a given strain (see test-multi folder for examples––e.g., '>A/Cattle/Colorado/24-012225-023-original/2024' is present in each of the 8 FASTA files corresponding to individual segments)
+Segments can be combined into a single FASTA file or split among separate files (all `.fasta` files inside the directory will be parsed); however, FASTA headers for each entry should be identical for a given strain (see test-multi folder for examples––e.g., '>A/Cattle/Colorado/24-012225-023-original/2024' is present in each of the 8 FASTA files corresponding to individual segments).
 
+To run GenoFLU-multi, first change directories:
 ``
 cd GenoFLU-multi
 ``
 
+And then call the python script:
 ``
 python bin/genoflu-multi.py -f <FASTA_directory>
 ``
 
-Results will be output within a new results folder inside <FASTA_directory>
+A concatenated .tsv file containing the GenoFLU results for all strains will be output within a new `results` folder inside `<FASTA_directory>`.
 
+
+## Multiprocessing
+If you are annotating a large dataset, it is recommended to enable multiprocessing to reduce execution times as runtimes decrease nearly proportionally to the number of CPU cores provided (i.e., if 10 cores are utilized, the runtime is about 1/10 of the runtime without multiprocessing). Multiprocessing can either be enabled with the `-m` flag or with the `-n` flag, depending on the number of cores you would like to utilize.
+
+To use all available cores:
+``
+python bin/genoflu-multi.py -f <FASTA_directory> -m
+``
+
+To use a specific number of cores:
+``
+python bin/genoflu-multi.py -f <FASTA_directory> -n <n_cores>
+``
 
 ## Test
+A small test dataset is available within the `test-multi` directory. To run the test dataset through GenoFLU, use the following commands:
+
 ``
 cd GenoFLU-multi
 ``
