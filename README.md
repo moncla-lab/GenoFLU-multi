@@ -1,4 +1,8 @@
 # GenoFLU-multi
+Updated February 19, 2024
+
+* Merged v1.06 from GenoFLU repo to include updated reference files
+
 Updated December 18, 2024
 
 * Added multiprocessing functionality, enabled with the `-m` or `-n` arguments
