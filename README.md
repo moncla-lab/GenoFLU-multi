@@ -1,11 +1,15 @@
 # GenoFLU-multi
-Updated February 19, 2024
+Updated March 5, 2025
+
+* Added the ability to annotate strains that do not have sequences for all 8 segments, enabled with the `-i` flag
+
+Updated February 19, 2025
 
 * Merged v1.06 from GenoFLU repo to include updated reference files
 
 Updated December 18, 2024
 
-* Added multiprocessing functionality, enabled with the `-m` or `-n` arguments
+* Added multiprocessing functionality, enabled with the `-m` flag or `-n` argument
 
 Updated November 1, 2024
 

@@ -106,6 +106,7 @@ if __name__ == '__main__':
                         help='Excel file to cross-reference BLAST findings and identification to genotyping results.  Default genoflu/dependencies.  9 column Excel file, first column Genotype, followed by 8 columns for each segment and what those calls are for that genotype.')
     parser.add_argument('-m', '--multiprocessing', action='store_true', dest='multiprocessing', required=False, help='Allow for multiprocessing with all available cores: recommneded for large datasets to speed up execution.')
     parser.add_argument('-n', '--mpcores', action='store', dest='mpcores', required=False, help='Allow for multiprocessing, but specify the number of cores to use')
+    parser.add_argument('-i', '--run_incomplete', action='store_true', dest='run_incomplete', required=False, help='Allow for annotation of strains without sequences for all 8 segments')
 
     args = parser.parse_args()
 
@@ -153,7 +154,6 @@ if __name__ == '__main__':
     # and generate the blast database
     os.system(f'cat {args.reference_dir}/*.fasta | makeblastdb -dbtype nucl -out {blast_db} -title hpai_geno_db > /dev/null 2>&1')
 
-
     strain_records = {}
     for fasta in fastas:
         # need to iterate over all and make a dict with strain:[records]
@@ -171,7 +171,10 @@ if __name__ == '__main__':
                 except KeyError:
                     strain_records[strain] = [record]
 
-    strain_records_to_annotate = [(s,r) for s,r in strain_records.items() if len(r)==8]
+    if args.run_incomplete:
+        strain_records_to_annotate = [(s,r) for s,r in strain_records.items()]
+    else:
+        strain_records_to_annotate = [(s,r) for s,r in strain_records.items() if len(r)==8]
 
     if args.multiprocessing or args.mpcores:
         # if multiprocessing is enabled, strains will be split into n lists
@@ -209,7 +212,6 @@ if __name__ == '__main__':
                 f.write(headers)
                 for data in pool_data:
                     f.write(''.join(data[0]))
-
 
     else:
         run_genoflu(strain_records_to_annotate)
