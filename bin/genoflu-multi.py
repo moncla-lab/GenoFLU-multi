@@ -143,13 +143,14 @@ if __name__ == '__main__':
 
             # need to remove strains if they were annotated as a now-removed genotype (i.e., if a minor genotype gets designated as a major genotype)
             for s,g in zip(strains, genotypes):
-                if not g.startswith('Not assigned') and g not in current_genotypes:
+                # check for 'Not assigned: Only' to allow 'Not assigned: No Matching Genotypes' to be re-run in case a genotype has now been defined
+                if not g.startswith('Not assigned: Only') and g not in current_genotypes:
                     strains_to_reannotate.append(f"{s} (previously {g})")
                 else:
                     annotated_strains.append(s)
             
             if strains_to_reannotate:
-                print('Re-annotating the following strains as their genotypes have been redesignated:')
+                print('Re-annotating the following strains as their genotypes have been redesignated or may now be annotated:')
                 print('\n'.join(strains_to_reannotate))
 
         except Exception as e:
