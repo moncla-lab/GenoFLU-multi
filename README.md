@@ -1,4 +1,10 @@
 # GenoFLU-multi
+Updated March 10, 2026
+
+* Merged v1.07
+* Fixed a minor bug that could lead to an error if multiprocessing was enabled and a blank results.tsv file already existed
+* Added functionality to automatically re-run strains that were previously annotated as a genotype that no longer exists (i.e., a minor genotype that was re-designated as a major genotype)
+
 Updated March 5, 2025
 
 * Added the ability to annotate strains that do not have sequences for all 8 segments, enabled with the `-i` flag
