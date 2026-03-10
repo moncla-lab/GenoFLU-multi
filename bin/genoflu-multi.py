@@ -176,48 +176,54 @@ if __name__ == '__main__':
     else:
         strain_records_to_annotate = [(s,r) for s,r in strain_records.items() if len(r)==8]
 
-    if args.multiprocessing or args.mpcores:
-        # if multiprocessing is enabled, strains will be split into n lists
-        # where n is equal to the number of available CPU cores
-        # each list will be run through GenoFLU on an individual core simultaneously
-        try:
-            cores = int(args.mpcores)
-        except TypeError:
-            cores = mp.cpu_count()
-        print(f'Utilziing multiprocessing with {cores} cores')
+    if len(strain_records_to_annotate) != 0:
+        if args.multiprocessing or args.mpcores:
+            # if multiprocessing is enabled, strains will be split into n lists
+            # where n is equal to the number of available CPU cores
+            # each list will be run through GenoFLU on an individual core simultaneously
+            try:
+                cores = int(args.mpcores)
+            except TypeError:
+                cores = mp.cpu_count()
+            print(f'Utilziing multiprocessing with {cores} cores')
 
-        if len(strain_records_to_annotate) != 0:
+            # if len(strain_records_to_annotate) != 0:
+            #     cores = min(cores, len(strain_records_to_annotate))
+            #     split_strain_records = split(strain_records_to_annotate, cores)
+            # else:
+            #     split_strain_records = [[]]
+
             cores = min(cores, len(strain_records_to_annotate))
             split_strain_records = split(strain_records_to_annotate, cores)
+
+            ## start multiprocessing pool
+            mp.set_start_method('fork')
+            pool = mp.Pool()
+        
+            ## and run the simulations
+            pool_data = pool.starmap(run_genoflu, zip(split_strain_records, range(1,cores+1)))
+            headers = pool_data[0][1]
+
+            pool.close()
+            pool.join()
+
+            if os.path.exists(results_tsv):
+                with open(results_tsv, 'a') as f:
+                    for data in pool_data:
+                        f.write(''.join(data[0]))
+            else:
+                with open(results_tsv, 'a') as f:
+                    f.write(headers)
+                    for data in pool_data:
+                        f.write(''.join(data[0]))
+
         else:
-            split_strain_records = [[]]
-    
-        ## start multiprocessing pool
-        mp.set_start_method('fork')
-        pool = mp.Pool()
-    
-        ## and run the simulations
-        pool_data = pool.starmap(run_genoflu, zip(split_strain_records, range(1,cores+1)))
-        headers = pool_data[0][1]
-
-        pool.close()
-        pool.join()
-
-        if os.path.exists(results_tsv):
-            with open(results_tsv, 'a') as f:
-                for data in pool_data:
-                    f.write(''.join(data[0]))
-        else:
-            with open(results_tsv, 'a') as f:
-                f.write(headers)
-                for data in pool_data:
-                    f.write(''.join(data[0]))
-
+            run_genoflu(strain_records_to_annotate)
     else:
-        run_genoflu(strain_records_to_annotate)
+        print("No new sequences to annotate")
 
     # remove the temporary and blast directories
     shutil.rmtree(temporary_dir)
     shutil.rmtree(blast_dir)
 
-    print(round(time.time() - start_time, 2))
+    print(f'GenoFLU ran in {round(time.time() - start_time, 2)} seconds')
