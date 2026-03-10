@@ -131,7 +131,27 @@ if __name__ == '__main__':
     # (i.e., can add new sequences to your fastas and annotate only those)
     if os.path.exists(results_tsv):
         try:
-            annotated_strains = list(pd.read_csv(results_tsv, sep='\t')['Strain'])
+            results_df = pd.read_csv(results_tsv, sep='\t')
+            key_df = pd.read_excel(args.cross_reference)
+            strains = list(results_df['Strain'])
+            genotypes = list(results_df['Genotype'])
+
+            current_genotypes = list(key_df['Genotype'])
+
+            annotated_strains = []
+            strains_to_reannotate = []
+
+            # need to remove strains if they were annotated as a now-removed genotype (i.e., if a minor genotype gets designated as a major genotype)
+            for s,g in zip(strains, genotypes):
+                if not g.startswith('Not assigned') and g not in current_genotypes:
+                    strains_to_reannotate.append(f"{s} (previously {g})")
+                else:
+                    annotated_strains.append(s)
+            
+            if strains_to_reannotate:
+                print('Re-annotating the following strains as their genotypes have been redesignated:')
+                print('\n'.join(strains_to_reannotate))
+
         except Exception as e:
             annotated_strains = []
     else:
@@ -163,9 +183,6 @@ if __name__ == '__main__':
         for record in SeqIO.parse(fasta, 'fasta'):
             strain = record.id
             if strain not in annotated_strains:
-                # if segment in segments:
-                #     record.id =  f'{record.id}_{segment}'
-                #     record.description = record.id
                 try:
                     strain_records[strain].append(record)
                 except KeyError:
@@ -187,20 +204,12 @@ if __name__ == '__main__':
                 cores = mp.cpu_count()
             print(f'Utilziing multiprocessing with {cores} cores')
 
-            # if len(strain_records_to_annotate) != 0:
-            #     cores = min(cores, len(strain_records_to_annotate))
-            #     split_strain_records = split(strain_records_to_annotate, cores)
-            # else:
-            #     split_strain_records = [[]]
-
             cores = min(cores, len(strain_records_to_annotate))
             split_strain_records = split(strain_records_to_annotate, cores)
 
-            ## start multiprocessing pool
+            ## start multiprocessing pool and run genoflu
             mp.set_start_method('fork')
             pool = mp.Pool()
-        
-            ## and run the simulations
             pool_data = pool.starmap(run_genoflu, zip(split_strain_records, range(1,cores+1)))
             headers = pool_data[0][1]
 
