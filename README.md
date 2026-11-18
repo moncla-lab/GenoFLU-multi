@@ -272,7 +272,7 @@ Where:
 - `PB2` is the gene segment
 
 ### Genotype Key File
-The [genotype key Excel file](./docs/Genotyping_reference_for_US_H5_2.3.4.4b.pdf) defines known genotypes and their segment genotyping schemes:
+The [genotype key Excel file](./dependencies/genotype_key.xlsx) defines known genotypes and their segment genotyping schemes:
 - First column: Genotype name (e.g., "A1", "B3.2")
 - Subsequent columns: Segment type for each of the 8 segments (PB2, PB1, PA, HA, NP, NA, MP, NS)
 
