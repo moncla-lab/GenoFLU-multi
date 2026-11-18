@@ -1,4 +1,8 @@
 # GenoFLU-multi
+Updated November 18, 2026
+
+* Merged v1.08
+
 Updated March 10, 2026
 
 * Merged v1.07
